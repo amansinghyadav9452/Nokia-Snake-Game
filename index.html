@@ -54,6 +54,15 @@
           </div>
 
           <div class="game hidden" id="gameView">
+            <div class="overlay hidden" id="overlay">
+              <div class="overlay-title" id="overlayTitle"></div>
+              <div id="overlayText"></div>
+            </div>
+            <div class="name-entry hidden" id="nameEntry">
+              <div class="overlay-title">NEW HIGH SCORE</div>
+              <input id="playerName" maxlength="10" value="PLAYER" aria-label="Player name">
+              <div>ENTER TO SAVE</div>
+            </div>
             <div class="stats">
               <span>SCORE <strong id="score">0</strong></span>
               <span>BEST <strong id="best">0</strong></span>
@@ -89,5 +98,6 @@
   </main>
 
   <script src="script.js"></script>
+<noscript><div style="padding:12px;font-family:monospace">JavaScript is required to play ByteSnake.</div></noscript>
 </body>
 </html>

@@ -110,6 +110,7 @@ applyTheme();
 function beep(type) {
   try {
     audioContext ??= new (window.AudioContext || window.webkitAudioContext)();
+    if (audioContext.state === "suspended") audioContext.resume();
 
     const oscillator = audioContext.createOscillator();
     const gain = audioContext.createGain();
@@ -159,7 +160,7 @@ function showNameEntry(score) {
   pendingScore = score;
   nameEntry.classList.remove("hidden");
   playerName.value = "PLAYER";
-  playerName.focus();
+  setTimeout(() => playerName.focus(), 0);
 }
 
 function saveScore() {
@@ -200,6 +201,7 @@ function showLeaderboard() {
   secretView.classList.add("hidden");
   leaderboardView.classList.remove("hidden");
   overlay.classList.add("hidden");
+  nameEntry.classList.add("hidden");
   state = "leaderboard";
   renderLeaderboard();
 }
@@ -239,6 +241,7 @@ function handleSecretKey(key) {
 function showMenu() {
   clearInterval(timer);
   clearTimeout(powerTimer);
+  clearTimeout(eventTimer);
   state = "menu";
   paused = false;
   gameView.classList.add("hidden");
@@ -1045,9 +1048,14 @@ playerName.addEventListener("input", () => {
   playerName.value = playerName.value.toUpperCase().replace(/[^A-Z0-9 _]/g, "").slice(0, 10);
 });
 
-setTimeout(() => {
+let bootTimer = setTimeout(() => {
   boot.classList.add("hidden");
   showMenu();
-  beep("select");
 }, 1700);
+
+boot.addEventListener("click", () => {
+  clearTimeout(bootTimer);
+  boot.classList.add("hidden");
+  showMenu();
+});
 
