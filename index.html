@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#777b74">
+  <meta name="description" content="ByteSnake, a retro grid snake game.">
+  <title>ByteSnake</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="phone">
+    <div class="speaker"><span></span><span></span><span></span><span></span><span></span></div>
+
+    <section class="screen-frame">
+      <div class="screen">
+        <div class="status">
+          <span>BYTE</span>
+          <span id="battery">▮▮▮</span>
+        </div>
+
+        <div class="lcd-view">
+          <div class="boot" id="boot">
+            <div class="brand">ByteSnake</div>
+            <div class="boot-line">loading...</div>
+          </div>
+
+          <div class="menu hidden" id="menu">
+            <div class="menu-title">BYTE SNAKE</div>
+            <div class="menu-item selected" data-menu="play">▶ PLAY</div>
+            <div class="menu-item" data-menu="difficulty">▶ DIFFICULTY: <span id="difficultyValue">NORMAL</span></div>
+            <div class="menu-item" data-menu="highscore">▶ HIGH SCORE: <span id="menuBest">0</span></div>
+            <div class="menu-help">↑ ↓ SELECT &nbsp; OK</div>
+          </div>
+
+          <div class="game hidden" id="gameView">
+            <div class="stats">
+              <span>SCORE <strong id="score">0</strong></span>
+              <span>BEST <strong id="best">0</strong></span>
+            </div>
+            <canvas id="game" width="280" height="280"></canvas>
+            <div class="overlay hidden" id="overlay">
+              <div class="overlay-title" id="overlayTitle"></div>
+              <div id="overlayText"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="nav-pad">
+      <button class="key key-up" data-dir="up" aria-label="Up">▲</button>
+      <button class="key key-left" data-dir="left" aria-label="Left">◀</button>
+      <button class="key key-ok" id="okBtn" aria-label="OK">OK</button>
+      <button class="key key-right" data-dir="right" aria-label="Right">▶</button>
+      <button class="key key-down" data-dir="down" aria-label="Down">▼</button>
+    </div>
+
+    <div class="softkeys">
+      <button id="leftSoft">MENU</button>
+      <button id="rightSoft">BACK</button>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
