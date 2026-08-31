@@ -87,6 +87,7 @@ const secretSequence = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLe
 let secretProgress = 0;
 let pendingScore = null;
 let leaderboard = loadLeaderboard();
+let savedPlayerName = localStorage.getItem("bytesnake-player-name") || "";
 
 const skins = ["CLASSIC", "STEALTH", "CYBER", "GOLD", "TOXIC"];
 const themes = ["GREEN", "DARK", "AMBER", "BLUE", "MONO"];
@@ -158,15 +159,24 @@ function qualifies(score) {
 
 function showNameEntry(score) {
   pendingScore = score;
+
+  if (savedPlayerName) {
+    saveScore();
+    return;
+  }
+
   nameEntry.classList.remove("hidden");
-  playerName.value = "PLAYER";
+  playerName.value = "";
   setTimeout(() => playerName.focus(), 0);
 }
 
 function saveScore() {
   if (pendingScore === null) return;
 
-  const name = (playerName.value || "PLAYER").trim().toUpperCase().slice(0, 10) || "PLAYER";
+  const name = (playerName.value || savedPlayerName || "PLAYER").trim().toUpperCase().slice(0, 10) || "PLAYER";
+  savedPlayerName = name;
+  localStorage.setItem("bytesnake-player-name", savedPlayerName);
+
   leaderboard.push({
     name,
     score: pendingScore,
@@ -700,22 +710,23 @@ function endGame() {
 }
 
 function togglePause() {
-  if (state !== "playing") return;
+  if (state !== "playing" && state !== "paused") return;
 
-  paused = !paused;
-
-  if (paused) {
+  if (state === "playing") {
+    paused = true;
     state = "paused";
     overlayTitle.textContent = "PAUSED";
     overlayText.textContent = "OK TO CONTINUE";
     overlay.classList.remove("hidden");
     beep("select");
-  } else {
-    state = "playing";
-    overlay.classList.add("hidden");
-    updateSpeed();
-    beep("select");
+    return;
   }
+
+  paused = false;
+  state = "playing";
+  overlay.classList.add("hidden");
+  updateSpeed();
+  beep("select");
 }
 
 function setDirection(name) {
