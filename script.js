@@ -752,7 +752,7 @@ function draw() {
   ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--lcd").trim();
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.strokeStyle = "rgba(38, 54, 31, .075)";
+  ctx.strokeStyle = "rgba(66, 232, 255, .10)";
   ctx.lineWidth = 1;
 
   for (let i = 0; i <= cells; i++) {
@@ -781,11 +781,11 @@ function draw() {
     const y = part.y * gridSize;
 
     const skinColors = {
-      CLASSIC: ["#26361f", "#405a31"],
-      STEALTH: ["#182017", "#303d2a"],
-      CYBER: ["#173237", "#31565b"],
-      GOLD: ["#382a13", "#65501f"],
-      TOXIC: ["#26361f", "#526b2a"]
+      CLASSIC: ["#42e8ff", "#1b91b0"],
+      STEALTH: ["#b7ff4a", "#527d27"],
+      CYBER: ["#ff3cac", "#9a246d"],
+      GOLD: ["#ffd34e", "#a47718"],
+      TOXIC: ["#b7ff4a", "#287d4b"]
     };
     const colors = skinColors[skins[skinIndex]];
     ctx.fillStyle = index === 0 ? colors[0] : colors[1];
@@ -811,7 +811,7 @@ function drawFood() {
   const x = food.x * gridSize;
   const y = food.y * gridSize;
 
-  ctx.fillStyle = "#26361f";
+  ctx.fillStyle = food?.type === "poison" ? "#ff3cac" : food?.type === "gem" ? "#42e8ff" : food?.type === "gold" ? "#ffd34e" : "#b7ff4a";
 
   if (food.type === "normal") {
     ctx.fillRect(x + 6, y + 5, 8, 10);
@@ -834,7 +834,7 @@ function drawFood() {
   }
 
   ctx.fillRect(x + 4, y + 4, 12, 12);
-  ctx.fillStyle = "#a9bd78";
+  ctx.fillStyle = "#081018";
   ctx.fillRect(x + 7, y + 7, 6, 6);
 }
 
@@ -842,9 +842,9 @@ function drawPower() {
   const x = power.x * gridSize;
   const y = power.y * gridSize;
 
-  ctx.fillStyle = "#26361f";
+  ctx.fillStyle = food?.type === "poison" ? "#ff3cac" : food?.type === "gem" ? "#42e8ff" : food?.type === "gold" ? "#ffd34e" : "#b7ff4a";
   ctx.fillRect(x + 3, y + 3, 14, 14);
-  ctx.fillStyle = "#a9bd78";
+  ctx.fillStyle = "#081018";
 
   const symbol = {
     speed: "»",
