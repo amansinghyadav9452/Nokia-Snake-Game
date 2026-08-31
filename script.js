@@ -12,6 +12,7 @@ const nameEntry = document.getElementById("nameEntry");
 const playerName = document.getElementById("playerName");
 const secretCode = document.getElementById("secretCode");
 const eventEl = document.getElementById("event");
+const fxLayer = document.getElementById("fxLayer");
 const skinValue = document.getElementById("skinValue");
 const themeValue = document.getElementById("themeValue");
 const overlay = document.getElementById("overlay");
@@ -87,6 +88,10 @@ const secretSequence = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLe
 let secretProgress = 0;
 let pendingScore = null;
 let leaderboard = loadLeaderboard();
+let particles = [];
+let screenShakeTimer = null;
+let lastFrame = 0;
+let animationFrame = null;
 let savedPlayerName = localStorage.getItem("bytesnake-player-name") || "";
 
 const skins = ["CLASSIC", "STEALTH", "CYBER", "GOLD", "TOXIC"];
@@ -444,6 +449,72 @@ function triggerRandomEvent() {
   }
 }
 
+
+function burst(x, y, amount, kind) {
+  const palettes = {
+    eat: ["#b7ff4a", "#42e8ff"],
+    bonus: ["#ffd34e", "#ff3cac"],
+    poison: ["#ff3cac", "#7d274f"],
+    power: ["#42e8ff", "#b7ff4a"]
+  };
+  const palette = palettes[kind] || palettes.eat;
+
+  for (let i = 0; i < amount; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 1 + Math.random() * 2.8;
+    particles.push({
+      x: x * gridSize + gridSize / 2,
+      y: y * gridSize + gridSize / 2,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 1,
+      size: 1.5 + Math.random() * 2,
+      color: palette[i % palette.length]
+    });
+  }
+}
+
+function popText(text, type) {
+  const el = document.createElement("div");
+  el.className = "combo-pop";
+  el.textContent = text;
+  if (type === "bonus") el.style.color = "#ffd34e";
+  if (type === "poison") el.style.color = "#ff3cac";
+  fxLayer.appendChild(el);
+  setTimeout(() => el.remove(), 700);
+}
+
+function shakeScreen() {
+  gameView.classList.remove("screen-hit");
+  void gameView.offsetWidth;
+  gameView.classList.add("screen-hit");
+  clearTimeout(screenShakeTimer);
+  screenShakeTimer = setTimeout(() => gameView.classList.remove("screen-hit"), 180);
+}
+
+function renderFX(time) {
+  if (!lastFrame) lastFrame = time;
+  const dt = Math.min(32, time - lastFrame);
+  lastFrame = time;
+
+  particles = particles.filter(p => p.life > 0);
+
+  particles.forEach(p => {
+    p.x += p.vx * dt / 16;
+    p.y += p.vy * dt / 16;
+    p.vx *= .985;
+    p.vy *= .985;
+    p.life -= dt / 520;
+  });
+
+  if (state === "playing" || particles.length) draw();
+  animationFrame = requestAnimationFrame(renderFX);
+}
+
+function ensureFXLoop() {
+  if (!animationFrame) animationFrame = requestAnimationFrame(renderFX);
+}
+
 function newSnake() {
   clearTimeout(eventTimer);
   eventType = null;
@@ -567,11 +638,12 @@ function move() {
     if (head.y >= cells) head.y = 0;
   }
 
+  const boundary = eventType === "shrink" ? 1 : 0;
   const hitWall =
-    head.x < 0 ||
-    head.x >= cells ||
-    head.y < 0 ||
-    head.y >= cells;
+    head.x < boundary ||
+    head.x >= cells - boundary ||
+    head.y < boundary ||
+    head.y >= cells - boundary;
 
   const hitBody = snake.some((part, index) => {
     if (index === snake.length - 1) return false;
@@ -603,16 +675,23 @@ function eatFood() {
   missionProgress++;
 
   if (item.type === "poison") {
+    burst(food.x, food.y, 12, "poison");
+    popText("POISON -2", "poison");
+    shakeScreen();
     score = Math.max(0, score - 2);
     combo = 1;
     comboHits = 0;
     if (snake.length > 4) snake.splice(4);
     beep("error");
   } else {
+    burst(food.x, food.y, item.points > 1 ? 18 : 9, item.points > 1 ? "bonus" : "eat");
     comboHits++;
     combo = Math.min(9, 1 + Math.floor(comboHits / 3));
     const multiplier = doubleScore ? 2 : 1;
     score += item.points * combo * multiplier;
+    if (item.points > 1 || doubleScore || combo > 1) {
+      popText(doubleScore ? `x${combo} DOUBLE` : `x${combo} COMBO`, "bonus");
+    }
     beep(item.points > 1 || doubleScore ? "bonus" : "eat");
   }
 
@@ -643,6 +722,8 @@ function eatPower() {
   const selected = powers.find(item => item.type === power.type);
   if (!selected) return;
 
+  burst(power.x, power.y, 20, "power");
+  popText(selected.label, "bonus");
   powerEl.textContent = selected.label;
   beep("power");
   gameView.classList.add("power-flash");
@@ -770,11 +851,18 @@ function draw() {
   if (eventType === "shrink") {
     ctx.strokeStyle = "#26361f";
     ctx.lineWidth = 4;
-    ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+    ctx.strokeRect(gridSize / 2, gridSize / 2, canvas.width - gridSize, canvas.height - gridSize);
   }
 
   if (food) drawFood();
   if (power) drawPower();
+
+  particles.forEach(p => {
+    ctx.globalAlpha = Math.max(0, p.life);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+  });
+  ctx.globalAlpha = 1;
 
   snake.forEach((part, index) => {
     const x = part.x * gridSize;
@@ -842,7 +930,13 @@ function drawPower() {
   const x = power.x * gridSize;
   const y = power.y * gridSize;
 
-  ctx.fillStyle = food?.type === "poison" ? "#ff3cac" : food?.type === "gem" ? "#42e8ff" : food?.type === "gold" ? "#ffd34e" : "#b7ff4a";
+  const powerColors = {
+    speed: "#ff3cac",
+    slow: "#b7ff4a",
+    ghost: "#42e8ff",
+    shrink: "#ffd34e"
+  };
+  ctx.fillStyle = powerColors[power.type] || "#42e8ff";
   ctx.fillRect(x + 3, y + 3, 14, 14);
   ctx.fillStyle = "#081018";
 
@@ -1059,7 +1153,9 @@ playerName.addEventListener("input", () => {
   playerName.value = playerName.value.toUpperCase().replace(/[^A-Z0-9 _]/g, "").slice(0, 10);
 });
 
-let bootTimer = setTimeout(() => {
+let bootTimer = ensureFXLoop();
+
+setTimeout(() => {
   boot.classList.add("hidden");
   showMenu();
 }, 1700);
