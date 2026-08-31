@@ -33,11 +33,37 @@
             <div class="menu-help">↑ ↓ SELECT &nbsp; OK</div>
           </div>
 
+          <div class="leaderboard hidden" id="leaderboardView">
+            <div class="custom-title">TOP SCORES</div>
+            <div id="scoreList"></div>
+            <div class="custom-help">OK BACK</div>
+          </div>
+
+          <div class="secret hidden" id="secretView">
+            <div class="custom-title">SECRET MODE</div>
+            <div class="secret-code" id="secretCode">READY</div>
+            <div class="secret-help">ENTER CODE WITH KEYS</div>
+            <div class="custom-help">OK BACK</div>
+          </div>
+
+          <div class="customize hidden" id="customizeView">
+            <div class="custom-title">CUSTOMIZE</div>
+            <div class="custom-row"><span>SKIN</span><strong id="skinValue">CLASSIC</strong></div>
+            <div class="custom-row"><span>LCD</span><strong id="themeValue">GREEN</strong></div>
+            <div class="custom-help">← → CHANGE &nbsp; OK BACK</div>
+          </div>
+
           <div class="game hidden" id="gameView">
             <div class="stats">
               <span>SCORE <strong id="score">0</strong></span>
               <span>BEST <strong id="best">0</strong></span>
             </div>
+            <div class="run-info">
+              <span id="combo">COMBO x1</span>
+              <span id="power">NORMAL</span>
+            </div>
+            <div class="mission" id="mission">MISSION: EAT 10 FOOD <strong id="missionCount">0/10</strong></div>
+            <div class="event hidden" id="event">EVENT</div>
             <canvas id="game" width="280" height="280"></canvas>
             <div class="overlay hidden" id="overlay">
               <div class="overlay-title" id="overlayTitle"></div>
